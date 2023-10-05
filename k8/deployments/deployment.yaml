@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth_api
+spec:
+  selector:
+    matchLabels:
+      app: auth_api
+  template:
+    metadata:
+      labels:
+        app: auth_api
+    spec:
+      containers:
+        - name: auth_api
+          image: auth_api
+          imagePullPolicy: Never
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 3000

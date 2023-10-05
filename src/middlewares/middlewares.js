@@ -1,55 +1,13 @@
 import jwt from "jsonwebtoken";
 
-export const notFound = (req, res, next) => {
-    res.status(404);
-    const error = new Error(`🔍 - Not Found - ${req.originalUrl}`);
-    next(error);
-};
-
-export const errorHandler = (req, res, next, err) => {
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode);
-  res.json({
-    message: err.message,
-    stack: process.env.NODE_ENV === "production" ? "🥞" : err.stack,
-  });
-}
-
-export const validateToken = async (req, res, next) => {
-    let token;
-    let authHeader = req.headers.Authorization || req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer")) {
-      token = authHeader.split(" ")[1];
-      jwt.verify(
-        token,
-        process.env.ACCESS_TOKEN_SECERT,
-        (err, decoded) => {
-          if (err) {
-            res.status(401);
-            throw new Error("User is not authorized");
-          }
-          req.user = decoded.user;
-          next();
-        }
-      );
-
-      if (!token) {
-        res.status(401);
-        throw new Error("User is not authorized or token is missing");
-      }
-    }
-  };
-
 export const generateAccessToken = (payload) => {
-  const token = jwt.sign(
-    payload,
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION }
-  );
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRATION,
+  });
   return token;
 };
 
-export const verifyToken = (req, res, next) => {
+export const verifyAccessToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1]; // Use optional chaining to avoid errors if Authorization header is missing.
 
   if (typeof token !== "undefined") {
@@ -72,11 +30,9 @@ export const verifyToken = (req, res, next) => {
 };
 
 export const generateRefreshToken = (payload) => {
-  const refreshToken = jwt.sign(
-    payload,
-    process.env.REFRESH_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
-  );
+  const refreshToken = jwt.sign(payload, process.env.REFRESH_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRATION,
+  });
   return refreshToken;
 };
 
@@ -89,3 +45,32 @@ export const verifyRefreshToken = async (refreshToken) => {
   }
 };
 
+export const generateVerificationToken = (email) => {
+  try {
+    const secretKey = process.env.JWT_SECRET;
+    const verificationToken = jwt.sign({ email }, secretKey, {
+      expiresIn: "30m",
+    });
+
+    return verificationToken;
+  } catch (error) {
+    console.log(error);
+    throw new Error(
+      "An error occurred while generating the verification token"
+    );
+  }
+};
+
+export const generateResetToken = (email) => {
+  try {
+    const secretKey = process.env.JWT_SECRET; // Use your JWT secret here
+    const resetToken = jwt.sign({ email }, secretKey, {
+      expiresIn: "1h", // Set the expiration time for the reset token (e.g., 1 hour)
+    });
+
+    return resetToken;
+  } catch (error) {
+    console.error(error);
+    throw new Error("An error occurred while generating the reset token");
+  }
+};

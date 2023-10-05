@@ -1,17 +1,17 @@
 import express from "express";
-import { verifyRefreshToken, verifyToken } from "../middlewares/middlewares.js";
+import {
+  verifyRefreshToken,
+  verifyAccessToken,
+} from "../middlewares/middlewares.js";
 import { editProfile, getUserData, refreshToken } from "../controllers/profile.controller.js";
 
 const profileRouter = express.Router();
 
-profileRouter.post("/profile", verifyToken, getUserData);
-profileRouter.post("/updateEmail", verifyToken, editProfile);
-
-// profileRouter.get("/resetPasswordTokenApi");
-profileRouter.post("/resetPassword", verifyToken, editProfile);
-// profileRouter.post("/sendEmail");
-
-profileRouter.post("/refreshToken", verifyRefreshToken , refreshToken);
-profileRouter.delete("/deleteAccount", verifyToken);
+profileRouter.delete("/deleteAccount", verifyAccessToken);
+profileRouter.post("/profile", verifyAccessToken, getUserData);
+profileRouter.post("/updateEmail", verifyAccessToken, editProfile);
+profileRouter.post("/updateUsername", verifyAccessToken, editProfile);
+profileRouter.post("/updatePassword", verifyAccessToken, editProfile);
+profileRouter.post("/generateRefreshToken", verifyRefreshToken , refreshToken);
 
 export default profileRouter;
